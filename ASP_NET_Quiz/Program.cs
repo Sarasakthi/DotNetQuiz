@@ -1,9 +1,19 @@
 using ASP_NET_Quiz.Components;
+using ASP_NET_Quiz.Components.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents();
+
+// Register HttpClient for QuizService
+builder.Services.AddHttpClient<QuizService>(client =>
+{
+    client.BaseAddress = new Uri("https://firestore.googleapis.com/v1/");
+});
+
+// Register service
+builder.Services.AddScoped<QuizService>();
 
 var app = builder.Build();
 

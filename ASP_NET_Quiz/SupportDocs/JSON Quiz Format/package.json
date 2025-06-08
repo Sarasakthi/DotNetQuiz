@@ -1,0 +1,21 @@
+{
+  "name": "firebase-quiz-uploader",
+  "version": "1.0.0",
+  "description": "Upload quiz questions to Firebase Firestore",
+  "main": "firebase-upload.js",
+  "scripts": {
+    "upload": "node firebase-upload.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  },
+  "keywords": [
+    "firebase",
+    "firestore",
+    "quiz",
+    "upload"
+  ],
+  "author": "Sakthi",
+  "license": "MIT"
+}

@@ -1,9 +1,35 @@
 ﻿@page "/quiz"
+@inject QuizService QuizService
 
-<h3>Quiz</h3>
+<h3>Quiz Questions</h3>
 
-<QuizComponent></QuizComponent>
+@if (questions == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @foreach (var q in questions)
+    {
+        <div class="card">
+            <p><strong>@q.questionNumber. @q.question</strong></p>
+            <ul>
+                @for (int i = 0; i < q.options.Count; i++)
+                {
+                    <li>@q.options[i]</li>
+                }
+            </ul>
+            <p><em>Answer: @q.correctResponse</em></p>
+            <p><small>@q.explanation</small></p>
+        </div>
+    }
+}
 
 @code {
+    private List<QuizQuestionModel>? questions;
 
+    protected override async Task OnInitializedAsync()
+    {
+        questions = await QuizService.GetQuizQuestionsAsync();
+    }
 }
