@@ -1,28 +1,29 @@
 using ASP_NET_Quiz.Components;
-using ASP_NET_Quiz.Components.Service;
+using ASP_NET_Quiz.Components.Data;
+using ASP_NET_Quiz.Components.Repository;
+using ASP_NET_Quiz.Components.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorComponents();
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 
-// Register HttpClient for QuizService
-builder.Services.AddHttpClient<QuizService>(client =>
-{
-    client.BaseAddress = new Uri("https://firestore.googleapis.com/v1/");
-});
+// Register DbContext for Azure SQL
+builder.Services.AddDbContext<QuizDBContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("QuizDb")));
 
-// Register service
-builder.Services.AddScoped<QuizService>();
+// Register Repository and Service
+builder.Services.AddScoped<iQuizRepository, QuizRepository>();
+builder.Services.AddScoped<IQuizService, QuizService>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseExceptionHandler("/Error");
 }
 
 app.UseHttpsRedirection();
