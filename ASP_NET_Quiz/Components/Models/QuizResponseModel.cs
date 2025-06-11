@@ -5,8 +5,9 @@ namespace ASP_NET_Quiz.Components.Models
     public class QuizResponseModel
     {
         [Key]
+        public int ResponseId { get; set; }
         public int QuestionNumber { get; set; }
-        public string UserResponse { get; set; } = string.Empty;
+        public required string UserResponse { get; set; }
         public bool IsCorrect { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿@page "/quiz"
+﻿@page "/quizOld"
 @inject IQuizService QuizService
 
 @using ASP_NET_Quiz.Components.Models
@@ -26,13 +26,13 @@ else if (currentQuestionIndex < questions.Count)
         @foreach (var option in currentQuestion.Options)
         {
             <li>
-                <input type="radio" name="answer_@currentQuestionIndex" @bind="selectedAnswer" value="@option.OptionText" />
-                <label>@option.OptionText</label>
+                <input type="radio" name="answer" @bind-value="selectedAnswer" />
+                @option.OptionText
             </li>
         }
     </ul>
 
-    <button class="btn btn-success" @onclick="SubmitAnswer" disabled="@string.IsNullOrEmpty(selectedAnswer)">Submit Answer</button>
+    <button class="btn btn-success" @onclick="StartQuiz" disabled="@string.IsNullOrEmpty(selectedAnswer)">Submit Answer</button>
 }
 else
 {
@@ -48,7 +48,7 @@ else
     private List<QuizQuestionsModel> questions = new();
     private int currentQuestionIndex = 0;
     private int score = 0;
-    private string selectedAnswer = string.Empty;
+    private string selectedAnswer;
 
     private bool isQuizStarted = false;
 

@@ -25,12 +25,12 @@ namespace ASP_NET_Quiz.Components.Repository
             return await _context.QuizQuestions
                 .Include(q => q.Options)
                 .FirstOrDefaultAsync(q => q.QuestionNumber == questionNumber)
-                   ?? new QuizQuestionsModel
-                   {
-                       Question = string.Empty,
-                       CorrectResponse = string.Empty,
-                       Explanation = string.Empty
-                   };
+                ?? new QuizQuestionsModel
+                {
+                    Question = string.Empty,
+                    CorrectResponse = string.Empty,
+                    Explanation = string.Empty
+                };
         }
 
         public async Task<List<QuizQuestionsModel>> GetQuestionsRandomByNumberOfQuestions(int numberOfQuestions)
@@ -52,7 +52,7 @@ namespace ASP_NET_Quiz.Components.Repository
             }
             catch (Exception)
             {
-                // Log the exception or handle it as needed
+                // Log exception if needed
                 return false;
             }
         }
