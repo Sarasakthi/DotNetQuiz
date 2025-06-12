@@ -44,8 +44,8 @@
                     <span>Question @(currentQuestionIndex + 1) of @questions?.Count</span>
                 </div>
 
-                <div class="progress mb-3">
-                    <div class="progress-bar" role="progressbar"
+                <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
                     style="width: @((double)(currentQuestionIndex + 1) / questions?.Count * 100)%">
                         @((int)((double)(currentQuestionIndex + 1) / questions?.Count * 100))%
                     </div>
@@ -60,16 +60,46 @@
                     {
                         @foreach (var option in currentQuestion.Options)
                         {
-                            <div class="form-check mb-2 border rounded p-2"
-                            style="@GetOptionStyle(option.OptionIndex)">
-                                <input class="form-check-input" type="radio"
-                                name="quizOption"
-                                value="@option.OptionIndex"
-                                checked="@(selectedOptionIndex == option.OptionIndex)"
-                                @onchange="@(() => selectedOptionIndex = option.OptionIndex)" />
-                                <label class="form-check-label">@option.OptionText</label>
+                            <div class="form-check mb-3">
+                                <label class="form-check-label border rounded p-3 w-100 d-flex align-items-center"
+                                for="@option.OptionIndex"
+                                style="@GetOptionStyle(option.OptionIndex)">
+                                    <input class="form-check-input me-2"
+                                    type="radio"
+                                    name="quizOption"
+                                    value="@option.OptionIndex"
+                                    id="@option.OptionIndex"
+                                           disabled="@(selectedOptionIndex != -1)"
+                                    checked="@(selectedOptionIndex == option.OptionIndex)"
+                                    @onchange="@(() => selectedOptionIndex = option.OptionIndex)"
+                                           @onclick="() => DisplayAnswer(option.OptionIndex)" />
+                                    @option.OptionText
+                                </label>
                             </div>
                         }
+                    }
+                </div>
+
+                <div class="text-muted small mt-1">
+                    @if (selectedOptionIndex == -1)
+                    {
+                        <div class="alert alert-secondary">
+                            <strong>Select an option to see the answer</strong>
+                        </div>
+                    }
+                    else {
+                        <div class="alert @(selectedOptionIndex == -1 ? "alert-secondary" : (selectedOptionIndex == Int32.Parse(currentQuestion.CorrectResponse) - 1 ? "alert-success" : "alert-danger"))">
+                            <p><strong>@answerResponse</strong></p>
+
+                            @if (answerResponse != "Correct Answer")
+                            {
+                                <p class="mb-0">Correct Answer: @currentQuestion.Options[Int32.Parse(currentQuestion.CorrectResponse) - 1].OptionText</p>
+                            }
+                            <br />
+                            <p>
+                                <strong>Explanation:</strong>
+                                @answerExplanation</p>
+                        </div>
                     }
                 </div>
 
@@ -143,6 +173,24 @@
             isLoading = false;
             StateHasChanged();
         }
+    }
+
+    private string answerResponse = "Correct Answer";
+    private string answerExplanation = "";
+
+    private void DisplayAnswer(int selectedOptionIndex)
+    {
+        bool answerCorrect = false;
+
+        if (questions == null || currentQuestion == null) return;
+
+        int correctResponseIndex = Int32.Parse(questions[currentQuestionIndex].CorrectResponse) - 1;
+        if (selectedOptionIndex == correctResponseIndex)
+        {
+            answerCorrect = true;
+        }
+        answerResponse = answerCorrect ? answerResponse : "Incorrect Answer";
+        answerExplanation = questions[currentQuestionIndex].Explanation ?? "Oops! No explanation availalble for this question.";
     }
 
     private void NextQuestion(int selectedOptionIndex)
