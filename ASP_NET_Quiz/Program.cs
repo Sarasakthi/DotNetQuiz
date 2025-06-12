@@ -3,6 +3,8 @@ using ASP_NET_Quiz.Components.Data;
 using ASP_NET_Quiz.Components.Repository;
 using ASP_NET_Quiz.Components.Services;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

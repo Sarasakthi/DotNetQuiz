@@ -1,8 +1,8 @@
-﻿namespace ASP_NET_Quiz.Components.Data
-{
-    using Microsoft.EntityFrameworkCore;
-    using ASP_NET_Quiz.Components.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using ASP_NET_Quiz.Components.Models;
 
+namespace ASP_NET_Quiz.Components.Data
+{
     public class QuizDBContext : DbContext
     {
         public QuizDBContext(DbContextOptions<QuizDBContext> options) : base(options) { }
