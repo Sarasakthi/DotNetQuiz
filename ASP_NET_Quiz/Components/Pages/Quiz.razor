@@ -1,52 +1,107 @@
 ﻿@page "/quiz"
+@rendermode InteractiveServer
 @inject IQuizService QuizService
 
-<h3>Quiz</h3>
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h3 class="text-center mb-4">
+            <i class="bi bi-question-circle-fill me-2"></i> Quiz Application
+        </h3>
 
-@if (isLoading)
-{
-    <p>Loading questions...</p>
-}
-else if (!isQuizStarted)
-{
-    <label for="questionCount">
-        Select number of questions:
-        <select id="questionCount" class="form-select" @bind="selectedCount">
-            @foreach (var count in questionCounts)
-            {
-                <option value="@count">@count</option>
-            }
-        </select>
-    </label>
-    <button class="btn btn-primary mt-2" @onclick="StartQuiz">Start Quiz</button>
-}
-else if (currentQuestionIndex < questions?.Count)
-{
-    <h4>Score: @correctCount / @questions.Count</h4>
-
-    <h5>@currentQuestion.Question</h5>
-
-    <ul>
-        @foreach (var option in currentQuestion.Options)
+        @if (isLoading)
         {
-            <li>
-                <input type="radio" 
-                    name="answer" @onclick="() => SelectOption(option.OptionText, option.OptionIndex)" 
-                    checked="@(selectedOptionIndex == option.OptionIndex)" />
-                @option.OptionText
-            </li>
+            <div class="text-center my-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-3">Loading questions...</p>
+            </div>
         }
-    </ul>
+        else if (!isQuizStarted && !showResult)
+        {
+            <div class="text-center">
+                <h5>Welcome to the Quiz!</h5>
 
-    <button class="btn btn-success mt-2" @onclick="() => NextQuestion(selectedOptionIndex)" 
-        disabled="@string.IsNullOrEmpty(selectedOption)">Next</button>
-}
-else
-{
-    <h4>Quiz Completed!</h4>
-    <h5>Your Score: @correctCount / @questions?.Count</h5>
-    <button class="btn btn-secondary" @onclick="RestartQuiz">Restart Quiz</button>
-}
+                <div class="form-group mt-4">
+                    <label>Select number of questions</label>
+                    <select class="form-select w-25 mx-auto" @bind="selectedCount">
+                        @foreach (var count in questionCounts)
+                        {
+                            <option value="@count">@count Questions</option>
+                        }
+                    </select>
+                </div>
+
+                <button class="btn btn-primary btn-lg mt-3 w-40" @onclick="StartQuiz">
+                    <i class="bi bi-play-fill me-1"></i> Start Quiz
+                </button>
+            </div>
+        }
+        else if (currentQuestionIndex < questions?.Count)
+        {
+            <div>
+                <!-- Score and Progress -->
+                <div class="d-flex justify-content-between mb-2">
+                    <strong><i class="bi bi-star-fill me-1"></i> Score: @correctCount / @questions?.Count</strong>
+                    <span>Question @(currentQuestionIndex + 1) of @questions?.Count</span>
+                </div>
+
+                <div class="progress mb-3">
+                    <div class="progress-bar" role="progressbar"
+                    style="width: @((double)(currentQuestionIndex + 1) / questions?.Count * 100)%">
+                        @((int)((double)(currentQuestionIndex + 1) / questions?.Count * 100))%
+                    </div>
+                </div>
+
+                <div class="card p-3 mb-3">
+                    <h5>@currentQuestion?.Question</h5>
+                </div>
+
+                <div>
+                    @if (currentQuestion?.Options != null)
+                    {
+                        @foreach (var option in currentQuestion.Options)
+                        {
+                            <div class="form-check mb-2 border rounded p-2"
+                            style="@GetOptionStyle(option.OptionIndex)">
+                                <input class="form-check-input" type="radio"
+                                name="quizOption"
+                                value="@option.OptionIndex"
+                                checked="@(selectedOptionIndex == option.OptionIndex)"
+                                @onchange="@(() => selectedOptionIndex = option.OptionIndex)" />
+                                <label class="form-check-label">@option.OptionText</label>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <button class="btn btn-success btn-lg w-100 mt-4"
+                disabled="@(selectedOptionIndex == -1)"
+                @onclick="() => NextQuestion(selectedOptionIndex)">
+                    @(currentQuestionIndex == questions.Count - 1 ? "Finish Quiz" : "Next Question")
+                </button>
+            </div>
+        }
+        else
+        {
+            <!-- Results Section -->
+            <div class="text-center mt-4">
+                <i class="@GetResultIcon() fs-1 text-@GetResultColor()"></i>
+                <h4 class="mt-3">Quiz Completed!</h4>
+
+                <div class="card p-4 mt-3" style="background: linear-gradient(45deg, #2196f3, #21cbf3); color: white;">
+                    <h5>Your Final Score</h5>
+                    <h2 class="fw-bold">@correctCount / @(questions?.Count ?? 0)</h2>
+                    <p>@GetPercentageScore()% Correct</p>
+                </div>
+
+                <p class="mt-3">@GetResultMessage()</p>
+
+                <button class="btn btn-secondary btn-lg mt-2" @onclick="RestartQuiz">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Take Quiz Again
+                </button>
+            </div>
+        }
+    </div>
+</div>
 
 @code {
     private List<QuizQuestionsModel>? questions;
@@ -55,13 +110,11 @@ else
     private bool isLoading = true;
     private bool showResult = false;
     private int correctCount = 0;
-
     private List<int> questionCounts = new() { 5, 10, 15, 20 };
     private int selectedCount = 5;
-
     private bool isQuizStarted = false;
-
-    private QuizQuestionsModel currentQuestion => questions.ElementAtOrDefault(currentQuestionIndex);
+    private int selectedOptionIndex = -1;
+    private QuizQuestionsModel? currentQuestion => questions?.ElementAtOrDefault(currentQuestionIndex);
 
     protected override void OnInitialized()
     {
@@ -70,61 +123,102 @@ else
 
     private async Task StartQuiz()
     {
-        Console.WriteLine("StartQuiz method called");
         try
         {
             isQuizStarted = true;
             isLoading = true;
             StateHasChanged();
 
-            questions = await QuizService.GetQuestionsRandomByNumber‌OfQuestions(selectedCount);
+            questions = await QuizService.GetQuestionsRandomByNumberOfQuestions(selectedCount);
             currentQuestionIndex = 0;
             correctCount = 0;
             selectedOption = null;
+            selectedOptionIndex = -1;
             showResult = false;
             isLoading = false;
             StateHasChanged();
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Error in StartQuiz: {ex.Message}");
             isLoading = false;
             StateHasChanged();
         }
     }
 
-    private int selectedOptionIndex = -1;
-    private void SelectOption(string optionText, int index)
-    {
-        selectedOption = optionText;
-        selectedOptionIndex = index;
-    }
-
     private void NextQuestion(int selectedOptionIndex)
     {
-        int correctResponseIndex = Int32.Parse(questions![currentQuestionIndex].CorrectResponse) - 1;
+        if (questions == null || currentQuestion == null) return;
+
+        int correctResponseIndex = Int32.Parse(questions[currentQuestionIndex].CorrectResponse) - 1;
         if (selectedOptionIndex == correctResponseIndex)
         {
             correctCount++;
         }
-        selectedOption = null;
+
         this.selectedOptionIndex = -1;
         currentQuestionIndex++;
 
-
-        if (currentQuestionIndex >= questions!.Count)
+        if (currentQuestionIndex >= questions.Count)
         {
             showResult = true;
             isQuizStarted = false;
         }
+
+        StateHasChanged();
     }
 
     private void RestartQuiz()
     {
+        showResult = false;
         isQuizStarted = false;
         questions?.Clear();
         currentQuestionIndex = 0;
         correctCount = 0;
         selectedOption = null;
+        selectedOptionIndex = -1;
+        selectedCount = 5;
+
+        StateHasChanged();
+    }
+
+    private string GetOptionStyle(int optionIndex)
+    {
+        if (selectedOptionIndex == optionIndex)
+        {
+            return "background-color: #e6f7ff; border: 2px solid #007bff;";
+        }
+        return "border: 1px solid #ced4da;";
+    }
+
+    private string GetResultIcon()
+    {
+        var percentage = GetPercentageScore();
+        return percentage >= 80 ? "bi bi-trophy-fill" :
+               percentage >= 60 ? "bi bi-hand-thumbs-up-fill" :
+               "bi bi-emoji-neutral-fill";
+    }
+
+    private string GetResultColor()
+    {
+        var percentage = GetPercentageScore();
+        return percentage >= 80 ? "success" :
+               percentage >= 60 ? "info" :
+               "warning";
+    }
+
+    private int GetPercentageScore()
+    {
+        if (questions == null || questions.Count == 0) return 0;
+        return (int)Math.Round((double)correctCount / questions.Count * 100);
+    }
+
+    private string GetResultMessage()
+    {
+        var percentage = GetPercentageScore();
+        return percentage >= 90 ? "Excellent! You're a quiz master! 🏆" :
+               percentage >= 80 ? "Great job! Well done! 👏" :
+               percentage >= 70 ? "Good work! Keep it up! 👍" :
+               percentage >= 60 ? "Not bad! Room for improvement! 📚" :
+               "Keep practicing! You'll get better! 💪";
     }
 }
