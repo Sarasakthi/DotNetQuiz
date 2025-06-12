@@ -29,7 +29,6 @@ Users can select the number of questions, attempt quizzes, and receive instant r
 ```bash
 ASP_NET_Quiz/
 ├── Pages/
-│   ├── _Host.cshtml       # Blazor Server Host Page
 │   ├── Quiz.razor         # Main Quiz Component
 │   ├── Home.razor         # Optional Landing Page
 ├── Shared/
@@ -88,17 +87,7 @@ dotnet run
 
 ---
 
-## 📸 Screenshots
-| Quiz Home | Quiz In Progress | Quiz Results |
-|-----------|------------------|--------------|
-| ![Home](screenshots/home.png) | ![Quiz](screenshots/quiz.png) | ![Result](screenshots/result.png) |
-
-> _You can create a `screenshots/` folder and upload relevant images for visual representation._
-
----
-
 ## 🗇️ Key Files
-- **_Host.cshtml**: Boots the Blazor app (server-side)
 - **App.razor**: Handles routing and MudBlazor providers
 - **Quiz.razor**: Core quiz logic and UI
 - **QuizService.cs**: Database fetch and quiz logic
