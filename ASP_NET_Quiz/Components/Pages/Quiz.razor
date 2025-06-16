@@ -44,19 +44,16 @@
                 </div>
 
                 <div class="progress">
-                    <div class="progress-number"
-                         aria-valuenow="@((int)((double)(currentQuestionIndex + 1) / questions?.Count * 100))"
-                         style="left: @((double)(currentQuestionIndex + 1) / questions?.Count * 100)%;">
-                    </div>
+                    <ul>
+                        @for (int i = 0; i < questions?.Count; i++)
+                        {
+                            var cssClass = i < currentQuestionIndex ? "complete" :
+                            i == currentQuestionIndex ? "current" : "";
 
-                    <div class="quiz-progress" role="progressbar">
-                        <div class="quiz-progress-bar quiz-progress-bar-striped quiz-progress-bar-animated"
-                             style="width: @((double)(currentQuestionIndex + 1) / questions?.Count * 100)%;">
-                        </div>
-                    </div>
+                            <li class="@cssClass" data-step="@(i + 1)"></li>
+                        }
+                    </ul>
                 </div>
-
-
 
                 <div class="quiz-card mb-3">
                     <p class="quiz-quesion">@currentQuestion?.Question</p>
