@@ -2,8 +2,8 @@
 @rendermode InteractiveServer
 @inject IQuizService QuizService
 
-<div class="container mt-5">
-    <div class="card shadow p-4">
+<div class="quiz-container">
+    <div class="quiz-card">
         <h3 class="text-center mb-4">
             <i class="bi bi-question-circle-fill me-2"></i> Quiz Application
         </h3>
@@ -22,7 +22,7 @@
 
                 <div class="form-group mt-4">
                     <label>Select number of questions</label>
-                    <select class="form-select w-25 mx-auto" @bind="selectedCount">
+                    <select class="quiz-select" @bind="selectedCount">
                         @foreach (var count in questionCounts)
                         {
                             <option value="@count">@count Questions</option>
@@ -30,7 +30,7 @@
                     </select>
                 </div>
 
-                <button class="btn btn-primary btn-lg mt-3 w-40" @onclick="StartQuiz">
+                <button class="quiz-button mt-3" @onclick="StartQuiz">
                     <i class="bi bi-play-fill me-1"></i> Start Quiz
                 </button>
             </div>
@@ -38,40 +38,53 @@
         else if (currentQuestionIndex < questions?.Count)
         {
             <div>
-                <!-- Score and Progress -->
                 <div class="d-flex justify-content-between mb-2">
                     <strong><i class="bi bi-star-fill me-1"></i> Score: @correctCount / @questions?.Count</strong>
                     <span>Question @(currentQuestionIndex + 1) of @questions?.Count</span>
                 </div>
 
-                <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                    style="width: @((double)(currentQuestionIndex + 1) / questions?.Count * 100)%">
-                        @((int)((double)(currentQuestionIndex + 1) / questions?.Count * 100))%
+                <div class="progress">
+                    <div class="progress-number"
+                         aria-valuenow="@((int)((double)(currentQuestionIndex + 1) / questions?.Count * 100))"
+                         style="left: @((double)(currentQuestionIndex + 1) / questions?.Count * 100)%;">
+                    </div>
+
+                    <div class="quiz-progress" role="progressbar">
+                        <div class="quiz-progress-bar quiz-progress-bar-striped quiz-progress-bar-animated"
+                             style="width: @((double)(currentQuestionIndex + 1) / questions?.Count * 100)%;">
+                        </div>
                     </div>
                 </div>
 
-                <div class="card p-3 mb-3">
-                    <h5>@currentQuestion?.Question</h5>
+
+
+                <div class="quiz-card mb-3">
+                    <p class="quiz-quesion">@currentQuestion?.Question</p>
                 </div>
 
                 <div>
+                    @if (selectedOptionIndex == -1)
+                    {
+                        <div class="quiz-alert quiz-alert-secondary">
+                            <strong>Select an option to see the answer</strong>
+                        </div>
+                    }
+
                     @if (currentQuestion?.Options != null)
                     {
                         @foreach (var option in currentQuestion.Options)
                         {
-                            <div class="form-check mb-3">
-                                <label class="form-check-label border rounded p-3 w-100 d-flex align-items-center"
-                                for="@option.OptionIndex"
-                                style="@GetOptionStyle(option.OptionIndex)">
-                                    <input class="form-check-input me-2"
-                                    type="radio"
-                                    name="quizOption"
-                                    value="@option.OptionIndex"
-                                    id="@option.OptionIndex"
+                            <div class="form-group mb-3">
+                                <label class="quiz-option-container @(selectedOptionIndex == option.OptionIndex ? "selected-option" : "")"
+                                       for="@option.OptionIndex">
+                                    <input class="quiz-option-input"
+                                           type="radio"
+                                           name="quizOption"
+                                           value="@option.OptionIndex"
+                                           id="@option.OptionIndex"
                                            disabled="@(selectedOptionIndex != -1)"
-                                    checked="@(selectedOptionIndex == option.OptionIndex)"
-                                    @onchange="@(() => selectedOptionIndex = option.OptionIndex)"
+                                           checked="@(selectedOptionIndex == option.OptionIndex)"
+                                           @onchange="@(() => selectedOptionIndex = option.OptionIndex)"
                                            @onclick="() => DisplayAnswer(option.OptionIndex)" />
                                     @option.OptionText
                                 </label>
@@ -81,43 +94,36 @@
                 </div>
 
                 <div class="text-muted small mt-1">
-                    @if (selectedOptionIndex == -1)
+                    @if (selectedOptionIndex != -1)
                     {
-                        <div class="alert alert-secondary">
-                            <strong>Select an option to see the answer</strong>
-                        </div>
-                    }
-                    else {
-                        <div class="alert @(selectedOptionIndex == -1 ? "alert-secondary" : (selectedOptionIndex == Int32.Parse(currentQuestion.CorrectResponse) - 1 ? "alert-success" : "alert-danger"))">
+                        <div class="quiz-alert @(selectedOptionIndex == Int32.Parse(currentQuestion.CorrectResponse) - 1 ? "quiz-alert-success" : "quiz-alert-danger")">
                             <p><strong>@answerResponse</strong></p>
 
-                            @if (answerResponse != "Correct Answer")
+                            @if (answerResponse.Contains("Incorrect").ToString() == "True")
                             {
-                                <p class="mb-0">Correct Answer: @currentQuestion.Options[Int32.Parse(currentQuestion.CorrectResponse) - 1].OptionText</p>
+                                <p class="mb-0"><strong>Correct Answer is: </strong>@currentQuestion.Options[Int32.Parse(currentQuestion.CorrectResponse) - 1].OptionText</p>
+                                <br />
                             }
-                            <br />
-                            <p>
-                                <strong>Explanation:</strong>
-                                @answerExplanation</p>
+
+                            <p><strong>Explanation:</strong> @answerExplanation</p>
                         </div>
                     }
                 </div>
 
-                <button class="btn btn-success btn-lg w-100 mt-4"
-                disabled="@(selectedOptionIndex == -1)"
-                @onclick="() => NextQuestion(selectedOptionIndex)">
+                <button class="quiz-button mt-4"
+                        disabled="@(selectedOptionIndex == -1)"
+                        @onclick="() => NextQuestion(selectedOptionIndex)">
                     @(currentQuestionIndex == questions.Count - 1 ? "Finish Quiz" : "Next Question")
                 </button>
             </div>
         }
         else
         {
-            <!-- Results Section -->
             <div class="text-center mt-4">
                 <i class="@GetResultIcon() fs-1 text-@GetResultColor()"></i>
                 <h4 class="mt-3">Quiz Completed!</h4>
 
-                <div class="card p-4 mt-3" style="background: linear-gradient(45deg, #2196f3, #21cbf3); color: white;">
+                <div class="quiz-card mt-3" style="background: linear-gradient(45deg, #2196f3, #21cbf3); color: white;">
                     <h5>Your Final Score</h5>
                     <h2 class="fw-bold">@correctCount / @(questions?.Count ?? 0)</h2>
                     <p>@GetPercentageScore()% Correct</p>
@@ -125,13 +131,14 @@
 
                 <p class="mt-3">@GetResultMessage()</p>
 
-                <button class="btn btn-secondary btn-lg mt-2" @onclick="RestartQuiz">
+                <button class="quiz-button quiz-button-secondary mt-2" @onclick="RestartQuiz">
                     <i class="bi bi-arrow-clockwise me-1"></i> Take Quiz Again
                 </button>
             </div>
         }
     </div>
 </div>
+
 
 @code {
     private List<QuizQuestionsModel>? questions;
@@ -175,7 +182,7 @@
         }
     }
 
-    private string answerResponse = "Correct Answer";
+    private string answerResponse = "Correct";
     private string answerExplanation = "";
 
     private void DisplayAnswer(int selectedOptionIndex)
@@ -189,7 +196,7 @@
         {
             answerCorrect = true;
         }
-        answerResponse = answerCorrect ? answerResponse : "Incorrect Answer";
+        answerResponse = "Your answer is " + (answerCorrect ? answerResponse : "Incorrect");
         answerExplanation = questions[currentQuestionIndex].Explanation ?? "Oops! No explanation availalble for this question.";
     }
 
@@ -202,6 +209,8 @@
         {
             correctCount++;
         }
+        
+        answerResponse = "Correct";
 
         this.selectedOptionIndex = -1;
         currentQuestionIndex++;
