@@ -1,5 +1,5 @@
 
-# ASP.NET Blazor Quiz Application 🎯
+# ASP.NET Quiz Application 🎯
 
 An interactive, web-based Quiz Application built using **ASP.NET Core Blazor Server** and **MudBlazor UI**.  
 Users can select the number of questions, attempt quizzes, and receive instant results with visual feedback.
