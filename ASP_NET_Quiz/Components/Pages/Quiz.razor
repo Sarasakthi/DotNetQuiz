@@ -1,27 +1,31 @@
 ﻿@page "/quiz"
+@page "/quiz/{restartParam}"
 @rendermode InteractiveServer
 @inject IQuizService QuizService
 
 <div class="quiz-container">
-    <div class="quiz-card">
-        <h3 class="text-center mb-4">
-            <i class="bi bi-question-circle-fill me-2"></i> Quiz Application
+    <div class="quiz-card-main">
+        <h3 class="text-center marbot-4 bold-text">
+            @(isQuizCompleted ? 
+                QuizCompletedExpression[random.Next(QuizCompletedExpression.Length)] : 
+                "Welcome to the ASP.Net Quiz Application")
         </h3>
 
         @if (isLoading)
         {
             <div class="text-center my-5">
                 <div class="spinner-border text-primary" role="status"></div>
-                <p class="mt-3">Loading questions...</p>
+                <p class="martop-3">Loading questions...</p>
             </div>
         }
         else if (!isQuizStarted && !showResult)
         {
             <div class="text-center">
-                <h5>Welcome to the Quiz!</h5>
-
-                <div class="form-group mt-4">
-                    <label>Select number of questions</label>
+                <div class="form-group-main martop-4">
+                    <label class="select-question-label marbot-3 bold-text">
+                        Select Number of Quiz Questions
+                    </label>
+                    <br />
                     <select class="quiz-select" @bind="selectedCount">
                         @foreach (var count in questionCounts)
                         {
@@ -30,17 +34,19 @@
                     </select>
                 </div>
 
-                <button class="quiz-button mt-3" @onclick="StartQuiz">
-                    <i class="bi bi-play-fill me-1"></i> Start Quiz
+                <button class="quiz-button martop-3 bold-text" role="button" @onclick="StartQuiz">
+                    Start Quiz
                 </button>
             </div>
         }
         else if (currentQuestionIndex < questions?.Count)
         {
             <div>
-                <div class="d-flex justify-content-between mb-2">
+                <div class="d-flex justify-content-between marbot-2">
                     <strong><i class="bi bi-star-fill me-1"></i> Score: @correctCount / @questions?.Count</strong>
+                    <!--
                     <span>Question @(currentQuestionIndex + 1) of @questions?.Count</span>
+                    -->
                 </div>
 
                 <div class="progress">
@@ -55,81 +61,100 @@
                     </ul>
                 </div>
 
-                <div class="quiz-card mb-3">
-                    <p class="quiz-quesion">@currentQuestion?.Question</p>
+                <div class="quiz-card marbot-3">
+                    <p class="quiz-quesion">Q@(currentQuestionIndex + 1): @currentQuestion?.Question</p>
                 </div>
 
-                <div>
+                <div class="quiz-option-form-group flexbox">
+                    <!--
                     @if (selectedOptionIndex == -1)
                     {
-                        <div class="quiz-alert quiz-alert-secondary">
-                            <strong>Select an option to see the answer</strong>
-                        </div>
+                    <div class="quiz-alert quiz-alert-secondary">
+                        <strong>Select an option to see the answer</strong>
+                    </div>
                     }
-
+                    -->
                     @if (currentQuestion?.Options != null)
                     {
                         @foreach (var option in currentQuestion.Options)
                         {
-                            <div class="form-group mb-3">
-                                <label class="quiz-option-container @(selectedOptionIndex == option.OptionIndex ? "selected-option" : "")"
-                                       for="@option.OptionIndex">
+                            <div class="form-group marbot-3">
+                                <label class="quiz-option-container
+                          @(selectedOptionIndex == option.OptionIndex ? "selected-option" : "")
+                          @(selectedOptionIndex != -1 && option.OptionIndex == Int32.Parse(currentQuestion.CorrectResponse) - 1 ? "quiz-answer-right" : "")
+                          @(selectedOptionIndex == option.OptionIndex && selectedOptionIndex != Int32.Parse(currentQuestion.CorrectResponse) - 1 ? "quiz-answer-wrong" : "")
+                          @(selectedOptionIndex != -1 ? "no-hover" : "")"
+                                for="@option.OptionIndex">
                                     <input class="quiz-option-input"
-                                           type="radio"
-                                           name="quizOption"
-                                           value="@option.OptionIndex"
-                                           id="@option.OptionIndex"
-                                           disabled="@(selectedOptionIndex != -1)"
-                                           checked="@(selectedOptionIndex == option.OptionIndex)"
-                                           @onchange="@(() => selectedOptionIndex = option.OptionIndex)"
-                                           @onclick="() => DisplayAnswer(option.OptionIndex)" />
-                                    @option.OptionText
+                                    type="radio"
+                                    name="quizOption"
+                                    value="@option.OptionIndex"
+                                    id="@option.OptionIndex"
+                                    disabled="@(selectedOptionIndex != -1)"
+                                    checked="@(selectedOptionIndex == option.OptionIndex)"
+                                    @onchange="@(() => selectedOptionIndex = option.OptionIndex)"
+                                    @onclick="() => DisplayAnswer(option.OptionIndex)" />
+                                    <span class="option-text">@option.OptionText</span>
                                 </label>
                             </div>
                         }
                     }
                 </div>
 
-                <div class="text-muted small mt-1">
+                <div class="text-muted small martop-1">
                     @if (selectedOptionIndex != -1)
                     {
-                        <div class="quiz-alert @(selectedOptionIndex == Int32.Parse(currentQuestion.CorrectResponse) - 1 ? "quiz-alert-success" : "quiz-alert-danger")">
-                            <p><strong>@answerResponse</strong></p>
+                        bool answerResponseResult = selectedOptionIndex == Int32.Parse(currentQuestion.CorrectResponse) - 1;
+                        <div class="quiz-alert @(answerResponseResult ? "quiz-alert-correct" : "quiz-alert-incorrect")">
+                            <span>
+                                <img src="/images/answer-trans-@(answerResponseResult ? "correct" : "incorrect").png"
+                                class="answer-response-image"/>
+                                <strong class="answer-response">
+                                    @{
+                                        string answerExpression = answerResponseResult
+                                        ? CorrectAnswerExpression[random.Next(CorrectAnswerExpression.Length)]
+                                        : IncorrectAnswerExpression[random.Next(IncorrectAnswerExpression.Length)];
+                                    }
+                                    @answerExpression @answerResponse
+                                </strong>
+                            </span>
 
+                            <!--
                             @if (answerResponse.Contains("Incorrect").ToString() == "True")
                             {
-                                <p class="mb-0"><strong>Correct Answer is: </strong>@currentQuestion.Options[Int32.Parse(currentQuestion.CorrectResponse) - 1].OptionText</p>
-                                <br />
+                            <p class="marbot-0"><strong>Correct Answer is: </strong>@currentQuestion.Options[Int32.Parse(currentQuestion.CorrectResponse) - 1].OptionText</p>
+                            <br />
                             }
-
-                            <p><strong>Explanation:</strong> @answerExplanation</p>
+                            -->
+                            <p class="martop-3 answer-response-text">@answerExplanation</p>
                         </div>
                     }
                 </div>
 
-                <button class="quiz-button mt-4"
-                        disabled="@(selectedOptionIndex == -1)"
-                        @onclick="() => NextQuestion(selectedOptionIndex)">
+                <button class="quiz-button-next martop-4"
+                disabled="@(selectedOptionIndex == -1)"
+                role="button"
+                @onclick="() => NextQuestion(selectedOptionIndex)">
                     @(currentQuestionIndex == questions.Count - 1 ? "Finish Quiz" : "Next Question")
                 </button>
             </div>
         }
         else
         {
-            <div class="text-center mt-4">
+            <div class="quiz-card-final-container text-center martop-4">
                 <i class="@GetResultIcon() fs-1 text-@GetResultColor()"></i>
-                <h4 class="mt-3">Quiz Completed!</h4>
+                <h4 class="martop-3 bold-text">You Completed the Quiz!</h4>
 
-                <div class="quiz-card mt-3" style="background: linear-gradient(45deg, #2196f3, #21cbf3); color: white;">
-                    <h5>Your Final Score</h5>
+                <div class="quiz-card-final martop-3">
+                    <h5 class="bold-text">Your Final Score</h5>
                     <h2 class="fw-bold">@correctCount / @(questions?.Count ?? 0)</h2>
-                    <p>@GetPercentageScore()% Correct</p>
+                    <p class="bold-text">@GetPercentageScore()% Correct</p>
                 </div>
 
-                <p class="mt-3">@GetResultMessage()</p>
+                <p class="martop-3 bold-text">@GetResultMessage()</p>
 
-                <button class="quiz-button quiz-button-secondary mt-2" @onclick="RestartQuiz">
-                    <i class="bi bi-arrow-clockwise me-1"></i> Take Quiz Again
+                <button class="quiz-button martop-2 bold-text" @onclick="RestartQuiz">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Take Quiz Again
                 </button>
             </div>
         }
@@ -138,6 +163,15 @@
 
 
 @code {
+
+    [Parameter]
+    public string restartParam { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        RestartQuiz();
+    }
+
     private List<QuizQuestionsModel>? questions;
     private int currentQuestionIndex = 0;
     private string? selectedOption;
@@ -149,6 +183,13 @@
     private bool isQuizStarted = false;
     private int selectedOptionIndex = -1;
     private QuizQuestionsModel? currentQuestion => questions?.ElementAtOrDefault(currentQuestionIndex);
+    private bool isQuizCompleted = false;
+
+    Random random = new Random();
+
+    private string[] IncorrectAnswerExpression = ["Ahh!", "Boo!", "Bzzz!", "Dang!", "Err!", "Errr!", "Missed!", "Nah!", "Nah-nah!", "Nah-uh!", "No-go!", "Nope!", "Nope! Nope!", "Nope-a-roo!", "Nopeee!", "Nope-nah!", "Nope-o!", "Nopey!", "Nopezo!", "Nuh-uh!", "Oof!", "Oops!", "Oops-a!", "Try!", "Uh-oh!", "Uh-uh!", "Whoa!", "Whoops!", "Yikes!", "Zonk!"];
+    private string[] CorrectAnswerExpression = ["Ace!", "Bang!", "Bingo!", "Boom!", "Boom! Boom!", "Boom-boom!", "Bravo!", "Check!", "Cool!", "Ding!", "Got it!", "Gotcha!", "Hot-dig!", "Nailed!", "Pow!", "Pow-pow!", "Right!", "Righty!", "Score!", "Sweet!", "Sweeto!", "Woo!", "Woohoo!", "Yay!", "Yayyy!", "Yep!", "Yes!", "Yes-sir!", "Yup!", "Yup-yup!"];
+    private string[] QuizCompletedExpression = ["All done! Nailed it! 🚀", "Boom! You’ve crossed the finish line! 🎯", "Done! You’re awesome! 🚀", "Finished! You rocked it! 🎯", "Mission accomplished! Snacks time! 🚀", "Quiz complete! Well played! 🎯", "Quiz complete! You absolutely crushed it! 🚀", "Quiz complete! You’re officially a quiz master now! 🎯", "Quiz done and dusted! Time to celebrate! 🚀", "Quiz finished! Mic drop 🎤", "Quiz? Smashed it like a pro! 🎯", "That’s a wrap! 🚀", "Woohoo! You’ve conquered the quiz like a champ! 🚀", "You did it! High fives all around! 🎯", "You just unlocked ultimate quiz power! 🚀"];
 
     protected override void OnInitialized()
     {
@@ -160,6 +201,7 @@
         try
         {
             isQuizStarted = true;
+            isQuizCompleted = false;
             isLoading = true;
             StateHasChanged();
 
@@ -206,7 +248,7 @@
         {
             correctCount++;
         }
-        
+
         answerResponse = "Correct";
 
         this.selectedOptionIndex = -1;
@@ -216,6 +258,7 @@
         {
             showResult = true;
             isQuizStarted = false;
+            isQuizCompleted = true;
         }
 
         StateHasChanged();
@@ -225,6 +268,7 @@
     {
         showResult = false;
         isQuizStarted = false;
+        isQuizCompleted = false;
         questions?.Clear();
         currentQuestionIndex = 0;
         correctCount = 0;

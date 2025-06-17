@@ -1,4 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject NavigationManager Navigation
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">ASP.Net Quiz</a>
     </div>
@@ -15,7 +17,7 @@
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="quiz">
+            <NavLink class="nav-link" @onclick="RestartQuiz" style="cursor: pointer">
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Quiz
             </NavLink>
         </div>
@@ -23,3 +25,8 @@
     </nav>
 </div>
 
+@code {
+    private void RestartQuiz(){
+        Navigation.NavigateTo($"quiz/{DateTime.Now.Ticks}", forceLoad: true);
+    }
+}
