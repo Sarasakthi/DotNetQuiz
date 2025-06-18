@@ -35,7 +35,7 @@ ASP_NET_Quiz/
 │   ├── MainLayout.razor   # Main Layout for pages
 │   ├── NavMenu.razor      # Navigation Menu
 ├── Services/
-│   ├── IQuizService.cs    # Quiz Service Interface
+│   ├── iQuizService.cs    # Quiz Service Interface
 │   ├── QuizService.cs     # Quiz Service Implementation
 ├── wwwroot/
 │   ├── app.css            # Custom CSS

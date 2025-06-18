@@ -3,7 +3,7 @@ using ASP_NET_Quiz.Components.Repository;
 
 namespace ASP_NET_Quiz.Components.Services
 {
-    public class QuizService : IQuizService
+    public class QuizService : iQuizService
     {
         private readonly iQuizRepository _quizRepository;
 

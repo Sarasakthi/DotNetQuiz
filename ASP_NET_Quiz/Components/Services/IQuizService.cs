@@ -1,7 +1,7 @@
 ﻿namespace ASP_NET_Quiz.Components.Services
 {
     using ASP_NET_Quiz.Components.Models;
-    public interface IQuizService
+    public interface iQuizService
     {
         Task<List<QuizQuestionsModel>> GetAllQuestionsAsync();
         Task<QuizQuestionsModel> GetQuestionByNumberAsync(int questionNumber);
