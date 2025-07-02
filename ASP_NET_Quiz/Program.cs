@@ -12,7 +12,7 @@ builder.Services.AddRazorComponents()
 
 // Register DbContext for Azure SQL
 builder.Services.AddDbContext<QuizDBContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("QuizDb")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ASPNETQuiz_ConnectionString")));
 
 // Register Repository and Service
 builder.Services.AddScoped<iQuizRepository, QuizRepository>();
