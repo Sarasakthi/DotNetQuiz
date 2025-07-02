@@ -11,14 +11,6 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Register DbContext for Azure SQL
-
-var connectionString = builder.Configuration.GetConnectionString("ASPNETQuiz_ConnectionString");
-Console.WriteLine($"Connection String: {connectionString}");
-if (string.IsNullOrEmpty(connectionString))
-{
-    throw new InvalidOperationException("Connection string 'ASPNETQuiz_ConnectionString' is not configured.");
-}
-
 builder.Services.AddDbContext<QuizDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ASPNETQuiz_ConnectionString")));
 
