@@ -20,7 +20,7 @@ Users can select the number of questions, attempt quizzes, and receive instant r
 - **Frontend & Backend:** Blazor Server (.NET 8 / .NET 7)
 - **UI Components:** MudBlazor  
 - **Database:** SQL Server (Azure SQL or Local)  
-- **ORM:** ADO.NET or Entity Framework (if used)  
+- **ORM:** Entity Framework
 - **Dependency Injection:** Blazor’s built-in DI
 
 ---
